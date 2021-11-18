@@ -1,0 +1,7 @@
+export const MULTIPLY = 'multiply'
+export const DEDUCTION = 'deduction'
+export const SUMMARY = 'summary'
+export const RESULT = 'result'
+export const DIVIDE = 'divide'
+export const CLEAR = 'clear'
+export const PERCENT = 'percent'
