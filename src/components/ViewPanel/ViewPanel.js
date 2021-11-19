@@ -1,5 +1,6 @@
 import React from 'react';
 import {TextField} from "@mui/material";
+import { viewPanel } from './../Calculator.module.scss'
 
 const ViewPanel = ({ value, ...rest }) => {
     return (
@@ -8,14 +9,10 @@ const ViewPanel = ({ value, ...rest }) => {
             variant="outlined"
             value={value}
             disabled
-            sx={{
-                cursor: 'transparent',
-                width: '100%',
-                opacity: '1',
-            }}
+            className={viewPanel}
             {...rest}
         />
     )
 }
-//caret-color: transparent;
+
 export default ViewPanel;

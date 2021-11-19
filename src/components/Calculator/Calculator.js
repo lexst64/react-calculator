@@ -1,110 +1,110 @@
-import React, {useState} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import ViewPanel from "../ViewPanel/ViewPanel";
 import ControlPanel from "../ControlPanel/ControlPanel";
-import {controlButtons} from "../ControlPanel/CalculatorButton/buttonTypes";
 import {concatNumbers} from "../../utils";
-import {DIVIDE, MULTIPLY, RESULT} from "../ControlPanel/CalculatorButton/actions";
-import './Calculator.scss'
-
-const SPACE = ' '
+import {CLEAR, DEDUCTION, DIVIDE, MULTIPLY, NUMBER, RESULT, SUMMARY} from "../helpers/actions";
+import { calculator } from './../Calculator.module.scss'
 
 const Calculator = () => {
     const [input, setInput] = useState('')
     const [calcInfo, setCalcInfo] = useState({
-        currentNumber: null,
-        numbers: [],
-        actions: [],
+        currentNumber: 0,
+        prevNumber: 0,
+        action: null,
+        currentResult: null,
+        prevResult: null,
     })
 
-    const updateInput = (value, action) => {
+    const getResult = useCallback(() => {
+        const {action, currentNumber, prevNumber, currentResult, prevResult} = calcInfo
+
+        const firstOperand = prevResult !== null ? prevResult : prevNumber
+        const secondOperand = currentNumber
+
         switch (action) {
             case MULTIPLY:
+                return firstOperand * secondOperand
             case DIVIDE:
-                setInput(input + SPACE + value + SPACE)
-                break
-            case RESULT:
-                setInput(value)
-                break
-            default: setInput(input + value)
+                return firstOperand / secondOperand
+            case DEDUCTION:
+                return firstOperand - secondOperand
+            case SUMMARY:
+                return firstOperand + secondOperand
+            default:
+                return currentResult
         }
+    }, [calcInfo])
+
+    // result updating
+    useEffect(() => {
+        setCalcInfo(prevState => ({
+            ...prevState,
+            currentResult: getResult(),
+        }))
+    }, [calcInfo.currentNumber])
+
+    const numberHandler = (value) => {
+        setCalcInfo(prevState => ({
+            ...prevState,
+            currentNumber: concatNumbers(prevState.currentNumber, value),
+        }))
+        setInput(prevState => prevState + value)
     }
 
-    const multiplyHandler = () => {
+    const actionHandler = (action, value) => {
         setCalcInfo(prevState => ({
-            currentNumber: null,
-            actions: [...prevState.actions, MULTIPLY],
-            numbers: [...prevState.numbers, prevState.currentNumber],
+            ...prevState,
+            currentNumber: 0,
+            prevNumber: prevState.currentNumber,
+            action: action,
+            currentResult: null,
+            prevResult: prevState.currentResult,
         }))
-        return {
-            value: controlButtons.multiply,
-            action: MULTIPLY,
-        }
-    }
-
-    const divideHandler = () => {
-        setCalcInfo(prevState => ({
-            currentNumber: null,
-            actions: [...prevState.actions, DIVIDE],
-            numbers: [...prevState.numbers, prevState.currentNumber],
-        }))
-        return {
-            value: controlButtons.divide,
-            action: DIVIDE,
-        }
+        setInput(prevState => prevState + value)
     }
 
     const resultHandler = () => {
-        const numbers = [...calcInfo.numbers, calcInfo.currentNumber]
-
-        const result = numbers.reduce((res, num, index) => {
-            if (!res) return num
-            switch (calcInfo.actions[index - 1]) {
-                case MULTIPLY: return res * num
-                case DIVIDE: return res / num
-                default: return res
-            }
-        }, null)
-
-        setCalcInfo({
-            currentNumber: result,
-            numbers: [],
-            actions: [],
-        })
-
-        return {
-            value: result,
-            action: RESULT,
-        }
+        setCalcInfo(prevState => ({
+            ...prevState,
+            prevNumber: 0,
+            currentNumber: 0,
+            prevResult: null,
+            action: null,
+        }))
+        setInput(calcInfo.currentResult)
     }
 
-    const buttonClickHandler = (btnValue) => {
-        let actionInfo
-        switch (btnValue) {
-            case controlButtons.multiply: {
-                actionInfo = multiplyHandler()
+    const clearHandler = () => {
+        setCalcInfo({
+            currentNumber: 0,
+            prevNumber: 0,
+            action: null,
+            prevResult: null,
+            currentResult: null,
+        })
+        setInput('')
+    }
+
+    const buttonClickHandler = ({value, action}) => {
+        switch (action) {
+            case NUMBER:
+                numberHandler(value)
                 break
-            }
-            case controlButtons.divide: {
-                actionInfo = divideHandler()
+            case RESULT:
+                resultHandler()
                 break
-            }
-            case controlButtons.result: {
-                actionInfo = resultHandler()
+            case CLEAR:
+                clearHandler()
                 break
-            }
-            default: {
-                const currentNumber = concatNumbers(calcInfo.currentNumber || 0, btnValue || 0)
-                setCalcInfo({ ...calcInfo, currentNumber })
-                actionInfo = { value: btnValue }
-            }
+            default:
+                actionHandler(action, value)
         }
-        updateInput(actionInfo.value, actionInfo.action)
     }
 
     return (
-        <div className={'calculator'}>
-            <ViewPanel value={input} />
-            <ControlPanel onButtonClick={buttonClickHandler} />
+        <div className={calculator}>
+            <ViewPanel value={input}/>
+            <ControlPanel onButtonClick={buttonClickHandler}/>
         </div>
     )
 }

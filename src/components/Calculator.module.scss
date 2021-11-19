@@ -1,0 +1,28 @@
+.calculator {
+  display: flex;
+  flex-flow: column nowrap;
+  max-width: 300px;
+}
+
+.control-panel {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.button {
+  height: 60px;
+  width: 60px;
+  margin: 5px;
+}
+
+.button-row {
+  display: flex;
+  width: 100%;
+}
+
+.view-panel {
+  width: 100%;
+}
+

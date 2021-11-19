@@ -1,4 +1,4 @@
-export const controlButtons = {
+export const buttonValues = {
     percent: '%',
     clear: 'ce',
     divide: '÷',
